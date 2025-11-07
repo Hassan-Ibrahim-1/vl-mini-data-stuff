@@ -1,0 +1,13 @@
+[package]
+name = "sd_debug"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[target.thumbv7em-none-eabihf]
+runner = 'probe-rs run --chip STM32G474CETx --connect-under-reset'
+
+[build]
+target = 'thumbv7em-none-eabihf'
+DEFMT_LOG = 'info,embassy_stm32=info'
