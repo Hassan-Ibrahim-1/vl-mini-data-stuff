@@ -1,76 +1,61 @@
-import ast
+import re
 import struct
 import pandas as pd
-from datetime import datetime
 
-filename = input("Input filename: ")
-file = open(filename, "r", encoding="utf-16")
-lines = file.readlines()
-adc1 = []
-adc2 = []
-adc3 = []
-adc4 = []
-timestamps = []
-j = 0
-adc_gain = 330 / 6.8
-gauge_factor = 2
-sg_voltage = 3.3
-for line in lines:
-    line_stripped = line.strip()
-    if line_stripped.startswith("["):
-        print(f"Line {j} ✅ starts with '['")
-        arr = ast.literal_eval(line_stripped)
-        timestamp_bytes = bytes(
-            [arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7]]
-        )
-        ts = int.from_bytes(timestamp_bytes, "little", signed=True)
-        dt = datetime.fromtimestamp(ts / 1_000_000)
-        # print(ts)
-        # print(dt)
-        for i in range(8, 496, 16):
-            sample1 = bytes([arr[i], arr[i + 1], arr[i + 2], arr[i + 3]])
-            sample2 = bytes([arr[i + 4], arr[i + 5], arr[i + 6], arr[i + 7]])
-            sample3 = bytes([arr[i + 8], arr[i + 9], arr[i + 10], arr[i + 11]])
-            sample4 = bytes([arr[i + 12], arr[i + 13], arr[i + 14], arr[i + 15]])
-            adc1.append(
-                (struct.unpack("<f", sample1)[0])
-                / (adc_gain * sg_voltage * gauge_factor)
-            )
-            adc2.append(
-                (struct.unpack("<f", sample2)[0])
-                / (adc_gain * sg_voltage * gauge_factor)
-            )
-            adc3.append(
-                (struct.unpack("<f", sample3)[0])
-                / (adc_gain * sg_voltage * gauge_factor)
-            )
-            adc4.append(
-                (struct.unpack("<f", sample4)[0])
-                / (adc_gain * sg_voltage * gauge_factor)
-            )
-            timestamps.append(dt)
-    else:
-        print(f"Line {j} ❌ does NOT start with '[' -> {line_stripped[:10]}")
-    j += 1
+logfile = "sd_debug/out.txt"
+out_csv = "out.csv"
+
+acc_x, acc_y, acc_z = [], [], []
+gyro_x, gyro_y, gyro_z = [], [], []
+block_indices = []
+
+# Matches exactly the comma-separated numbers inside brackets
+array_re = re.compile(r"\[([0-9,\s]+)\]")
+
+with open(logfile, "r", encoding="utf-8", errors="ignore") as f:
+    for lineno, line in enumerate(f):
+        m = array_re.search(line)
+        if not m:
+            continue
+        num_str = m.group(1)
+        try:
+            arr = [int(x.strip()) for x in num_str.split(",")]
+        except Exception as e:
+            print(f"[line {lineno}] failed to parse ints: {e}")
+            continue
+
+        if len(arr) < 512:
+            # skip incomplete blocks
+            continue
+
+        block = arr[:512]
+        block_index = int.from_bytes(bytes(block[0:4]), "little")
+        data_bytes = block[4:508]
+
+        for i in range(0, len(data_bytes), 24):
+            chunk = data_bytes[i : i + 24]
+            if len(chunk) != 24:
+                continue
+            ax, ay, az, gx, gy, gz = struct.unpack("<ffffff", bytes(chunk))
+            acc_x.append(ax)
+            acc_y.append(ay)
+            acc_z.append(az)
+            gyro_x.append(gx)
+            gyro_y.append(gy)
+            gyro_z.append(gz)
+            block_indices.append(block_index)
 
 df = pd.DataFrame(
     {
-        "Recent Timestamp": timestamps,
-        "ADC1 Strain": adc1,
-        "ADC2 Strain": adc2,
-        "ADC3 Strain": adc3,
-        "ADC4 Strain": adc4,
+        "BlockIndex": block_indices,
+        "AccX": acc_x,
+        "AccY": acc_y,
+        "AccZ": acc_z,
+        "GyroX": gyro_x,
+        "GyroY": gyro_y,
+        "GyroZ": gyro_z,
     }
 )
 
-print(df)
-df.to_csv("output.csv", index=False)
-print(
-    "✅ CSV file 'adc_log.csv' created successfully! From ",
-    df.shape[0] / 31.0,
-    "Valid Rows",
-)  # 31 samples per arr/block
-
-# 6 readings, 3 gyro 3 acceleration
-# need a vl mini probe
-
+df.to_csv(out_csv, index=False)
+print(f"Saved {len(df)} samples to {out_csv}")
