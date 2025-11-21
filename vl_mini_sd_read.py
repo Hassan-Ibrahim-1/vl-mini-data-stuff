@@ -1,60 +1,79 @@
-import re
+import ast
 import struct
 import pandas as pd
+import re
 
-logfile = "sd_debug/out.txt"
-out_csv = "out.csv"
+filename = input("Input filename: ")
+file = open(filename, "r")
+lines = file.readlines()
 
-acc_x, acc_y, acc_z = [], [], []
-gyro_x, gyro_y, gyro_z = [], [], []
-block_indices = []
+acc_x = []
+acc_y = []
+acc_z = []
+gyro_x = []
+gyro_y = []
+gyro_z = []
+log_timestamps = []
 
-array_re = re.compile(r"\[([0-9,\s]+)\]")
+j = 0
+samples_per_block = 20  # (504 - 8) // 24 = 20 samples per block
 
-with open(logfile, "r", encoding="utf-8", errors="ignore") as f:
-    for lineno, line in enumerate(f):
-        m = array_re.search(line)
-        if not m:
-            continue
-        num_str = m.group(1)
-        try:
-            arr = [int(x.strip()) for x in num_str.split(",")]
-        except Exception as e:
-            print(f"[line {lineno}] failed to parse ints: {e}")
-            continue
+for line in lines:
+    line_stripped = line.strip()
 
-        if len(arr) < 512:
-            # skip incomplete blocks
-            continue
+    # Find the array portion using regex - matches [0, 128, ...]
+    match = re.search(r"\[[\d,\s]+\]", line_stripped)
 
-        block = arr[:512]
-        block_index = int.from_bytes(bytes(block[0:4]), "little")
-        data_bytes = block[4:508]
+    if match:
+        print(f"Line {j} ✅ found data array")
+        arr_str = match.group(0)
+        arr = ast.literal_eval(arr_str)
 
-        for i in range(0, len(data_bytes), 24):
-            chunk = data_bytes[i : i + 24]
-            if len(chunk) != 24:
-                continue
-            ax, ay, az, gx, gy, gz = struct.unpack("<ffffff", bytes(chunk))
+        # Extract log timestamp from beginning of line (e.g., "0.092626")
+        log_ts_match = re.match(r"^([\d.]+)", line_stripped)
+        log_ts = float(log_ts_match.group(1)) if log_ts_match else 0.0
+
+        # Each sample is 24 bytes: 3 floats for acc + 3 floats for gyro
+        # Data starts at byte 0, CRC is at bytes 508-511
+        for i in range(0, samples_per_block * 24, 24):
+            if i + 24 > len(arr):
+                break
+
+            # Acceleration (m/s^2) - 3 floats
+            ax = struct.unpack("<f", bytes(arr[i : i + 4]))[0]
+            ay = struct.unpack("<f", bytes(arr[i + 4 : i + 8]))[0]
+            az = struct.unpack("<f", bytes(arr[i + 8 : i + 12]))[0]
+
+            # Gyroscope (deg/s) - 3 floats
+            gx = struct.unpack("<f", bytes(arr[i + 12 : i + 16]))[0]
+            gy = struct.unpack("<f", bytes(arr[i + 16 : i + 20]))[0]
+            gz = struct.unpack("<f", bytes(arr[i + 20 : i + 24]))[0]
+
             acc_x.append(ax)
             acc_y.append(ay)
             acc_z.append(az)
             gyro_x.append(gx)
             gyro_y.append(gy)
             gyro_z.append(gz)
-            block_indices.append(block_index)
+            log_timestamps.append(log_ts)
+    else:
+        print(f"Line {j} ❌ no data array found -> {line_stripped[:40]}...")
+    j += 1
 
 df = pd.DataFrame(
     {
-        "BlockIndex": block_indices,
-        "AccX": acc_x,
-        "AccY": acc_y,
-        "AccZ": acc_z,
-        "GyroX": gyro_x,
-        "GyroY": gyro_y,
-        "GyroZ": gyro_z,
+        "Log_Time (s)": log_timestamps,
+        "Acc_X (m/s²)": acc_x,
+        "Acc_Y (m/s²)": acc_y,
+        "Acc_Z (m/s²)": acc_z,
+        "Gyro_X (deg/s)": gyro_x,
+        "Gyro_Y (deg/s)": gyro_y,
+        "Gyro_Z (deg/s)": gyro_z,
     }
 )
 
-df.to_csv(out_csv, index=False)
-print(f"Saved {len(df)} samples to {out_csv}")
+print(df)
+df.to_csv("imu_output.csv", index=False)
+print(f"✅ CSV file 'imu_output.csv' created successfully!")
+print(f"   Total samples: {df.shape[0]}")
+print(f"   From {df.shape[0] / samples_per_block:.1f} valid blocks")
