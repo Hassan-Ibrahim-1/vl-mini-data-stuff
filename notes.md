@@ -7,9 +7,3 @@
 acc: [f32; 3],
 /// deg/s
 gyro: [f32; 3],
-
-### Hmm
-
-sd_card_read seems fine, I don't think I have to modify it much. I have to
-figure out what needs to be modified in main config. Shouldn't be too much
-since they're both stm32's but still.
