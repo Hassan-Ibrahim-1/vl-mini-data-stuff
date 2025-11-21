@@ -1,0 +1,749 @@
+warning: unused variable: `max_altitude_agl`
+   --> /home/hassan/projects/mac-rocketry/Rust_Monorepo/firmware-common-new/src/vlp/packets/telemetry.rs:205:9
+    |
+205 |         max_altitude_agl: f32,
+    |         ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_max_altitude_agl`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+   Compiling firmware v0.1.0 (/home/hassan/projects/mac-rocketry/vl-mini-data-stuff/sd_debug)
+warning: `firmware-common-new` (lib) generated 1 warning
+warning: unused import: `ptr`
+ --> src/sd_debug.rs:6:17
+  |
+6 | use core::{mem, ptr};
+  |                 ^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `warn`
+  --> src/sd_debug.rs:10:19
+   |
+10 | use defmt::{info, warn};
+   |                   ^^^^
+
+warning: unused imports: `DMA1_CH1`, `DMA1_CH2`, `DMA1_CH3`, `DMA2_CH1`, `DMA2_CH2`, `PA10`, `PA5`, `PA6`, `PA7`, `PB0`, `PB4`, `PB5`, `Peri`, and `time::mhz`
+  --> src/sd_debug.rs:13:13
+   |
+13 |     Config, Peri,
+   |             ^^^^
+...
+17 |         DMA1_CH1, DMA1_CH2, DMA1_CH3, DMA2_CH1, DMA2_CH2, PA5, PA6, PA7, PA10, PB0, PB4, PB5,
+   |         ^^^^^^^^  ^^^^^^^^  ^^^^^^^^  ^^^^^^^^  ^^^^^^^^  ^^^  ^^^  ^^^  ^^^^  ^^^  ^^^  ^^^
+18 |     },
+19 |     time::mhz,
+   |     ^^^^^^^^^
+
+warning: unused imports: `PubSubChannel`, `Publisher`, `Subscriber`, `WaitResult`, and `watch::Watch`
+  --> src/sd_debug.rs:26:14
+   |
+26 |     pubsub::{PubSubChannel, Publisher, Subscriber, WaitResult},
+   |              ^^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^
+27 |     watch::Watch,
+   |     ^^^^^^^^^^^^
+
+warning: unused import: `Timer`
+  --> src/sd_debug.rs:29:54
+   |
+29 | use embassy_time::{Delay, Duration, Instant, Ticker, Timer};
+   |                                                      ^^^^^
+
+warning: unused imports: `FlightStage`, `VLStatusMessage`, and `unix_time::UnixTimeMessage`
+  --> src/sd_debug.rs:40:9
+   |
+40 |         unix_time::UnixTimeMessage,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+41 |         vl_status::{FlightStage, VLStatusMessage},
+   |                     ^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+
+warning: unused import: `ozys_measurement::OzysMeasurementMessage`
+  --> src/sd_debug.rs:47:41
+   |
+47 |         node_status::NodeStatusMessage, ozys_measurement::OzysMeasurementMessage,
+   |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:138:29
+    |
+138 | ...gleton!(: SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>, Delay> = SdCard::new(sd,...
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0308]: mismatched types
+   --> src/sd_debug.rs:136:29
+    |
+136 |     let sd = SpiDevice::new(&spi_1, cs);
+    |              -------------- ^^^^^^ expected `&Mutex<_, _>`, found `&Mutex<NoopRawMutex, Spi<'_, Async>>`
+    |              |
+    |              arguments to this function are incorrect
+    |
+note: two different versions of crate `embassy_sync` are being used; two types coming from two different versions of the same crate are different types even if they look the same
+   --> /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/mutex.rs:40:1
+    |
+40  | pub struct Mutex<M, T>
+    | ^^^^^^^^^^^^^^^^^^^^^^ this is the found type `embassy_sync::mutex::Mutex`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/mutex.rs:39:1
+    |
+39  | pub struct Mutex<M, T>
+    | ^^^^^^^^^^^^^^^^^^^^^^ this is the expected type `embassy_sync::mutex::Mutex`
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    = help: you can use `cargo tree` to explore your dependency tree
+note: associated function defined here
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:46:12
+    |
+46  |     pub fn new(bus: &'a Mutex<M, BUS>, cs: CS) -> Self {
+    |            ^^^
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:138:143
+    |
+138 | ...>>, Delay> = SdCard::new(sd, Delay)).unwrap();
+    |                 ----------- ^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |                 |
+    |                 required by a bound introduced by this call
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+    = note: required for `SpiDevice<'_, NoopRawMutex, Spi<'static, Async>, Output<'_>>` to implement `embedded_hal_async::spi::SpiDevice`
+note: required by a bound in `embedded_sdmmc::asynchronous::SdCard::<SPI, DELAYER>::new`
+   --> /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:51:10
+    |
+51  |     SPI: SpiDevice<u8>,
+    |          ^^^^^^^^^^^^^ required by this bound in `SdCard::<SPI, DELAYER>::new`
+...
+60  |     pub fn new(spi: SPI, delayer: DELAYER) -> SdCard<SPI, DELAYER> {
+    |            --- required by a bound in this associated function
+    = note: the full name for the type has been written to '/home/hassan/projects/mac-rocketry/vl-mini-data-stuff/sd_debug/target/thumbv7em-none-eabihf/debug/deps/sd_debug-2a0d9685394430db.long-type-11654657534696190559.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:136:29
+    |
+136 |     let sd = SpiDevice::new(&spi_1, cs);
+    |              -------------- ^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |              |
+    |              required by a bound introduced by this call
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice::<'a, M, BUS, CS>::new`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:44:13
+    |
+44  | impl<'a, M: RawMutex, BUS, CS> SpiDevice<'a, M, BUS, CS> {
+    |             ^^^^^^^^ required by this bound in `SpiDevice::<'a, M, BUS, CS>::new`
+45  |     /// Create a new `SpiDevice`.
+46  |     pub fn new(bus: &'a Mutex<M, BUS>, cs: CS) -> Self {
+    |            --- required by a bound in this associated function
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:138:9
+    |
+138 | ...   singleton!(: SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>, Delay> = SdCard::new(sd, Delay)).un...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+    = note: this error originates in the macro `$crate::singleton` which comes from the expansion of the macro `singleton` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:139:48
+    |
+139 |     spawner.must_spawn(sd_card_read_all_blocks(sdcard, crc));
+    |                                                ^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:140:53
+    |
+140 |     spawner.must_spawn(can_reset_task(can_receiver, sdcard));
+    |                                                     ^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:146:9
+    |
+146 |         SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:143:1
+    |
+143 | #[embassy_executor::task]
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+    = note: this error originates in the attribute macro `embassy_executor::task` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:145:5
+    |
+145 |     sdcard: &'static SdCard<
+    |     ^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:287:9
+    |
+287 |         SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:283:1
+    |
+283 | #[embassy_executor::task] // CHANGE SUBSCRIBER LIMIT??
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+    = note: this error originates in the attribute macro `embassy_executor::task` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex` is not satisfied
+   --> src/sd_debug.rs:286:5
+    |
+286 |     sdcard: &'static SdCard<
+    |     ^^^^^^ the trait `embassy_sync::blocking_mutex::raw::RawMutex` is not implemented for `NoopRawMutex`
+    |
+note: there are multiple different versions of crate `embassy_sync` in the dependency graph
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-sync/src/blocking_mutex/raw.rs:25:1
+    |
+25  | pub unsafe trait RawMutex {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^ this is the required trait
+...
+68  | pub struct NoopRawMutex {
+    | ----------------------- this type implements the required trait
+    |
+   ::: src/bootloader.rs:3:5
+    |
+3   | use embassy_stm32::{Peri, peripherals::IWDG, wdg::IndependentWatchdog};
+    |     ------------- one version of crate `embassy_sync` used here, as a dependency of crate `embassy_stm32`
+    |
+   ::: src/sd_debug.rs:23:5
+    |
+23  | use embassy_sync::{
+    |     ------------ one version of crate `embassy_sync` used here, as a direct dependency of the current crate
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- this type doesn't implement the required trait
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/fmt.rs:219:1
+    |
+219 | pub trait Try {
+    | ------------- this is the found trait
+    = note: two types coming from two different versions of the same crate are different types even if they look the same
+    = help: you can use `cargo tree` to explore your dependency tree
+note: required by a bound in `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice`
+   --> /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:29
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |                             ^^^^^^^^ required by this bound in `SpiDevice`
+
+error[E0599]: the method `num_bytes` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:151:28
+    |
+151 |     let size: u64 = sdcard.num_bytes().await.unwrap();
+    |                            ^^^^^^^^^ method cannot be called due to unsatisfied trait bounds
+    |
+   ::: /home/hassan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/embassy-sync-0.7.2/src/blocking_mutex/raw.rs:70:1
+    |
+70  | pub struct NoopRawMutex {
+    | ----------------------- doesn't satisfy `_: RawMutex`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    | ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `NoopRawMutex: embassy_sync::blocking_mutex::raw::RawMutex`
+            which is required by `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+
+error[E0599]: the method `read` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:166:10
+    |
+165 | /     sdcard
+166 | |         .read(&mut read_block, BlockIdx(block_index_primary))
+    | |         -^^^^ method cannot be called due to unsatisfied trait bounds
+    | |_________|
+    |
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  |   pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |   ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:40:1
+    |
+40  |   pub struct SdCard<SPI, DELAYER>
+    |   ------------------------------- doesn't satisfy `_: BlockDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+            which is required by `embedded_sdmmc::asynchronous::SdCard<embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>, embassy_time::Delay>: embedded_sdmmc::asynchronous::BlockDevice`
+
+error[E0599]: the method `read` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:187:10
+    |
+186 | /     sdcard
+187 | |         .read(&mut read_block, BlockIdx(block_index_secondary))
+    | |         -^^^^ method cannot be called due to unsatisfied trait bounds
+    | |_________|
+    |
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  |   pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    |   ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:40:1
+    |
+40  |   pub struct SdCard<SPI, DELAYER>
+    |   ------------------------------- doesn't satisfy `_: BlockDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+            which is required by `embedded_sdmmc::asynchronous::SdCard<embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>, embassy_time::Delay>: embedded_sdmmc::asynchronous::BlockDevice`
+
+error[E0599]: the method `read` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:227:16
+    |
+227 |         sdcard.read(&mut read_block, block_id).await.unwrap();
+    |                ^^^^ method cannot be called due to unsatisfied trait bounds
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    | ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:40:1
+    |
+40  | pub struct SdCard<SPI, DELAYER>
+    | ------------------------------- doesn't satisfy `_: BlockDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+            which is required by `embedded_sdmmc::asynchronous::SdCard<embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>, embassy_time::Delay>: embedded_sdmmc::asynchronous::BlockDevice`
+
+error[E0599]: the method `write` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:305:20
+    |
+305 |             sdcard.write(&empty, BlockIdx(0)).await.unwrap();
+    |                    ^^^^^ method cannot be called due to unsatisfied trait bounds
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    | ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:40:1
+    |
+40  | pub struct SdCard<SPI, DELAYER>
+    | ------------------------------- doesn't satisfy `_: BlockDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+            which is required by `embedded_sdmmc::asynchronous::SdCard<embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>, embassy_time::Delay>: embedded_sdmmc::asynchronous::BlockDevice`
+
+error[E0599]: the method `write` exists for reference `&SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, ...>, ...>, ...>`, but its trait bounds were not satisfied
+   --> src/sd_debug.rs:306:20
+    |
+306 |             sdcard.write(&empty, BlockIdx(1)).await.unwrap();
+    |                    ^^^^^ method cannot be called due to unsatisfied trait bounds
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embassy-c08a80187403f815/e145a65/embassy-embedded-hal/src/shared_bus/asynch/spi.rs:39:1
+    |
+39  | pub struct SpiDevice<'a, M: RawMutex, BUS, CS> {
+    | ---------------------------------------------- doesn't satisfy `_: SpiDevice`
+    |
+   ::: /home/hassan/.cargo/git/checkouts/embedded-sdmmc-rs-e7242a4f827ce914/5f270ac/src/./inner/sdcard/mod.rs:40:1
+    |
+40  | pub struct SdCard<SPI, DELAYER>
+    | ------------------------------- doesn't satisfy `_: BlockDevice`
+    |
+    = note: the following trait bounds were not satisfied:
+            `embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>: embedded_hal_async::spi::SpiDevice`
+            which is required by `embedded_sdmmc::asynchronous::SdCard<embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice<'static, NoopRawMutex, embassy_stm32::spi::Spi<'static, embassy_stm32::mode::Async>, embassy_stm32::gpio::Output<'static>>, embassy_time::Delay>: embedded_sdmmc::asynchronous::BlockDevice`
+
+Some errors have detailed explanations: E0277, E0308, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `firmware` (bin "sd_debug") generated 7 warnings
+error: could not compile `firmware` (bin "sd_debug") due to 35 previous errors; 7 warnings emitted

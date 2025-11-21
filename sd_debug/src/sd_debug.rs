@@ -4,21 +4,18 @@
 
 mod bootloader;
 use core::{mem, ptr};
-use embassy_futures::select::Either;
 use {defmt_rtt_pipe as _, panic_probe as _};
 
 use cortex_m::{asm, singleton};
 use defmt::{info, warn};
 use embassy_executor::Spawner;
-use embassy_futures::select::select;
 use embassy_stm32::{
-    Peri,
-    adc::{Adc, AdcChannel, SampleTime},
+    Config, Peri,
     crc::{Config as CrcConfig, Crc, InputReverseConfig, PolySize},
-    peripherals::{ADC1, DMA1_CH1, PA0, PA2, PA10, PB6, PB7, PB11, PB12, PB14, PC13},
-};
-use embassy_stm32::{
     gpio::{Level, Output, Speed},
+    peripherals::{
+        DMA1_CH1, DMA1_CH2, DMA1_CH3, DMA2_CH1, DMA2_CH2, PA5, PA6, PA7, PA10, PB0, PB4, PB5,
+    },
     time::mhz,
 };
 
@@ -46,10 +43,7 @@ use firmware_common_new::can_bus::{
     receiver::CanReceiver,
 };
 use firmware_common_new::can_bus::{
-    messages::{
-        node_status::NodeStatusMessage, ozys_measurement::OzysMeasurementMessage,
-        reset::ResetMessage,
-    },
+    messages::{node_status::NodeStatusMessage, reset::ResetMessage},
     sender::CanSender,
 };
 mod can;
@@ -62,48 +56,44 @@ pub enum BlockReady {
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
-    let config = {
+    let mut config = Config::default();
+    {
         use embassy_stm32::rcc::mux::*;
         use embassy_stm32::rcc::*;
-        let mut config = embassy_stm32::Config::default();
-        let rcc = &mut config.rcc;
 
-        rcc.hsi = false;
-        rcc.hse = Some(Hse {
-            freq: mhz(16),
-            mode: HseMode::Oscillator,
-        });
-        rcc.hsi48 = Some(Hsi48Config {
+        config.rcc.msi = None;
+        config.rcc.hsi = true;
+        config.rcc.hse = None;
+        config.rcc.hsi48 = Some(Hsi48Config {
             sync_from_usb: true,
         });
 
-        // Limit clock speed to 150Mhz to reduce power consumption
-        rcc.pll = Some(Pll {
-            source: PllSource::HSE,
+        config.rcc.pll = Some(Pll {
+            source: PllSource::HSI,
             prediv: PllPreDiv::DIV4,
-            mul: PllMul::MUL75,
-            divp: Some(PllPDiv::DIV2),
-            divq: Some(PllQDiv::DIV2),
+            mul: PllMul::MUL40,
             divr: Some(PllRDiv::DIV2),
+            divq: Some(PllQDiv::DIV2),
+            divp: None,
         });
+        config.rcc.pllsai1 = None;
 
-        rcc.sys = Sysclk::PLL1_R;
-        rcc.ahb_pre = AHBPrescaler::DIV1;
-        rcc.apb1_pre = APBPrescaler::DIV1;
-        rcc.apb2_pre = APBPrescaler::DIV1;
+        config.rcc.sys = Sysclk::PLL1_R;
+        config.rcc.ahb_pre = AHBPrescaler::DIV1;
+        config.rcc.apb1_pre = APBPrescaler::DIV1;
+        config.rcc.apb2_pre = APBPrescaler::DIV1;
 
-        rcc.ls = LsConfig::default_lse();
+        config.rcc.ls = LsConfig {
+            rtc: RtcClockSource::DISABLE,
+            lsi: true,
+            lse: None,
+        };
 
-        rcc.mux.rtcsel = RtcClockSource::LSE;
-        rcc.mux.adc12sel = Adcsel::SYS;
-        rcc.mux.adc345sel = Adcsel::SYS;
-        rcc.mux.clk48sel = Clk48sel::HSI48;
-        rcc.mux.fdcansel = Fdcansel::PLL1_Q;
-
-        config
-    };
+        config.rcc.mux.adcsel = Adcsel::SYS;
+        config.rcc.mux.clk48sel = Clk48sel::HSI48;
+    }
     let p = embassy_stm32::init(config);
-    info!("Hello OZYS V3!");
+    info!("Hello VL Mini");
 
     // Peripherals
 
@@ -117,22 +107,22 @@ async fn main(spawner: Spawner) {
     let ps = Output::new(p.PA7, Level::Low, Speed::Low); // PS pin, low: force pwm
     mem::forget(ps);
 
-    let (can_sender, can_receiver) = start_can_bus_tasks(&spawner, p.FDCAN3, p.PA8, p.PA15).await;
+    let (can_sender, can_receiver) = start_can_bus_tasks(&spawner, p.CAN1, p.PA11, p.PA12).await;
     spawner.must_spawn(watchdog_task(p.IWDG));
     spawner.must_spawn(node_status_task(can_sender));
-    spawner.must_spawn(status_led_task(p.PB14));
+    // spawner.must_spawn(status_led_task(p.PB14));
 
     // sd
-    let cs = Output::new(p.PB9, Level::High, Speed::High); // needed to configure as spi mode on peripheral
+    let cs = Output::new(p.PA10, Level::High, Speed::High); // needed to configure as spi mode on peripheral  
     let mut spi_config = SpiConfig::default();
     spi_config.frequency = Hertz(5_000_000);
     let spi1: Spi<'static, embassy_stm32::mode::Async> = Spi::new(
-        p.SPI1,
+        p.SPI3,
         unsafe { PB3::steal() },
         p.PB5,
         p.PB4,
-        p.DMA1_CH2,
-        p.DMA1_CH3,
+        p.DMA2_CH2,
+        p.DMA2_CH1,
         spi_config,
     );
     let spi1 = singleton!(:Mutex<NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>> = Mutex::new(spi1)).unwrap();
@@ -141,7 +131,8 @@ async fn main(spawner: Spawner) {
     let crc = Crc::new(p.CRC, crc_config);
 
     let sd = SpiDevice::new(spi1, cs);
-    let sdcard = singleton!(: SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>, Delay> = SdCard::new(sd, Delay)).unwrap();
+    let sdcard =
+        singleton!(: SdCard<SpiDevice<'static, NoopRawMutex, Spi<'static, embassy_stm32::mode::Async>, Output<'static>>, Delay> = SdCard::new(sd, Delay)).unwrap();
     spawner.must_spawn(sd_card_read_all_blocks(sdcard, crc));
     spawner.must_spawn(can_reset_task(can_receiver, sdcard));
 }
@@ -200,7 +191,7 @@ async fn sd_card_read_all_blocks(
     if check_sum != check_sum2 {
         info!(
             "Secondary Failed, checksum mismatch: {} != {}",
-            check_sum.to_be_bytes(),
+            check_sum.to_le_bytes(),
             check_sum2.to_le_bytes()
         );
     } else {
@@ -222,7 +213,8 @@ async fn sd_card_read_all_blocks(
         highest_card_index = block_index_secondary_inside;
     } else {
         info!("Primary and Secondary Block Indices are Corrupted/Missing");
-        highest_card_index = block_count;
+        // Read all blocks (blocks are 0-indexed, so last block is block_count - 1)
+        highest_card_index = block_count.saturating_sub(1);
     }
     let mut current_index = 2;
     info!("highest card index = {}", highest_card_index);
@@ -257,17 +249,17 @@ async fn sd_card_read_all_blocks(
     asm::bkpt();
 }
 
-#[embassy_executor::task]
-async fn status_led_task(yellow_led: Peri<'static, PB14>) {
-    let mut yellow_led = Output::new(yellow_led, Level::High, Speed::Low);
-    let mut ticker = Ticker::every(Duration::from_millis(1000));
-    loop {
-        yellow_led.set_high();
-        Timer::after_millis(50).await;
-        yellow_led.set_low();
-        ticker.next().await;
-    }
-}
+//#[embassy_executor::task]
+//async fn status_led_task(yellow_led: Peri<'static, PB14>) {
+//    let mut yellow_led = Output::new(yellow_led, Level::High, Speed::Low);
+//    let mut ticker = Ticker::every(Duration::from_millis(1000));
+//    loop {
+//        yellow_led.set_high();
+//        Timer::after_millis(50).await;
+//        yellow_led.set_low();
+//        ticker.next().await;
+//    }
+//}
 
 #[embassy_executor::task]
 async fn node_status_task(can_sender: &'static CanSender<NoopRawMutex>) {
