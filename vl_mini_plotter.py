@@ -1,13 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Load the CSV
 data = pd.read_csv("out.csv")
 
-# Optionally filter out zero rows (if needed)
 data = data[(data != 0).any(axis=1)]
 
-# X-axis will be the sample index
 x = data.index
 
 # Plot Accelerometer data

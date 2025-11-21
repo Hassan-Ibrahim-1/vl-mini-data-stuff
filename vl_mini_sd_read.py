@@ -9,7 +9,6 @@ acc_x, acc_y, acc_z = [], [], []
 gyro_x, gyro_y, gyro_z = [], [], []
 block_indices = []
 
-# Matches exactly the comma-separated numbers inside brackets
 array_re = re.compile(r"\[([0-9,\s]+)\]")
 
 with open(logfile, "r", encoding="utf-8", errors="ignore") as f:
